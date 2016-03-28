@@ -31,8 +31,8 @@ CONFIG = {
     "username": "Icinga"
 }
 
-TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate}\n{serviceoutput}" #noqa
-TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate}\n{hostoutput}"  #noqa
+TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" #noqa
+TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  #noqa
 
 
 def parse():
@@ -47,6 +47,7 @@ def parse():
     parser.add_argument('--servicestate', help='Service State')
     parser.add_argument('--serviceoutput', help='Service Output')
     parser.add_argument('--channel', help='Channel to notificate')
+    parser.add_argument('--oneline', action='store_true', help='Print only one line')
     parser.add_argument('--version', action='version',
                     version='%(prog)s {version}'.format(version=VERSION))
     args = parser.parse_args()
@@ -70,11 +71,24 @@ def make_data(args, config):
         EMOJI = ":clock10:"
     elif args.notificationtype == "DOWNTIMEEND":
         EMOJI = ":sunny:"
+    elif args.notificationtype == "DOWNTIMEREMOVED":
+        EMOJI = ""
+    elif args.notificationtype == "CUSTOM":
+        EMOJI = ":sound:"
+    elif args.notificationtype == "FLAPPINGSTART":
+        EMOJI = ":cloud:"
+    elif args.notificationtype == "FLAPPINGEND":
+        EMOJI = ":sunny:"
+    elif args.notificationtype == "ACKNOWLEDGEMENT":
+        EMOJI = ":exclamation:"
     else:
         EMOJI = ""
     
     text = EMOJI + template.format(**vars(args))
-    
+
+    if args.oneline:
+        text = text.splitlines()[0]
+
     payload = {
         "username": config["username"],
         "icon_url": config["icon_url"],
