@@ -27,8 +27,8 @@ import json
 VERSION = "0.1.1E"
 
 CONFIG = {
-    "icon_url": "https://slack.global.ssl.fastly.net/7bf4/img/services/nagios_128.png", #noqa
-    "username": "Nagios"
+    "icon_url": "https://s3.amazonaws.com/cloud.ohloh.net/attachments/50631/icinga_logo_med.png",  #noqa
+    "username": "Icinga"
 }
 
 TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate}\n{serviceoutput}" #noqa
