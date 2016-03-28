@@ -1,41 +1,150 @@
 # Nagios Mattermost Plugin
-A plugin for Nagios to enable notifications to Mattermost Open Source Chat.
+A plugin for Icinga to enable notifications to Mattermost Open Source Chat.
 
 # Usage
-Assuming you are using Nagios 4, the steps are:
+Assuming you are using Icinga2, the steps are:
 
-1. Copy _mattermost.py_ to /usr/local/nagios/libexec.
+1. Copy _mattermost.py_ to any Location. A good Location would be PluginContribDir.
 2. Create the notification command:
 
-        define command {
-              command_name notify-service-by-mattermost
-              command_line /usr/local/nagios/libexec/mattermost.py --url [URL] --channel [CHANNEL] --hostalias "$HOSTNAME$" --notificationtype "$NOTIFICATIONTYPE$" --servicedesc "$SERVICEDESC$" --servicestate "$SERVICESTATE$" --serviceoutput "$SERVICEOUTPUT$"
-        }
+```
+object NotificationCommand "mattermost_service" {
+  import "plugin-notification-command"
 
-        define command {
-              command_name notify-host-by-mattermost
-              command_line /usr/local/nagios/libexec/mattermost.py --url [URL] --channel [CHANNEL] --hostalias "$HOSTNAME$" --notificationtype "$NOTIFICATIONTYPE$" --hoststate "$HOSTSTATE$" --hostoutput "$HOSTOUTPUT$"
-        }
+  command = [ PluginContribDir + "/icinga2-mattermost/mattermost.py" ]
 
-3. Create the contact:
+  arguments = {
+    "--channel" = {
+      "description" = "mattermost channel"
+      "required" = true
+      "value" = "$mattermost_channel$"
+    }
+    "--hostalias" = {
+      "required" = true
+      "value" = "$mattermost_hostalias$"
+    }
+    "--notificationtype" = {
+      "required" = true
+      "value" = "$mattermost_notificationtype$"
+    }
+    "--oneline" = {
+      "set_if" = "$mattermost_oneline$"
+    }
+    "--servicedesc" = {
+      "required" = true
+      "value" = "$mattermost_servicedesc$"
+    }
+    "--serviceoutput" = {
+      "required" = true
+      "value" = "$mattermost_serviceoutput$"
+    }
+    "--servicestate" = {
+      "required" = true
+      "value" = "$mattermost_servicestate$"
+    }
+    "--url" = {
+      "description" = "mattermost incomming webhook url"
+      "required" = true
+      "value" = "$mattermost_url$"
+    }
+  }
+
+  vars += {
+    "mattermost_channel" = [ Channel ]
+    "mattermost_hostalias" = "$host.display_name$"
+    "mattermost_notificationtype" = "$notification.type$"
+    "mattermost_oneline" = [ Oneline ]
+    "mattermost_servicedesc" = "$service.display_name$"
+    "mattermost_serviceoutput" = "$service.output$"
+    "mattermost_servicestate" = "$service.state$"
+    "mattermost_url" = [ Incoming Webhook URL ]
+  }
+}
+```
+
+```
+object NotificationCommand "mattermost_host" {
+  import "plugin-notification-command"
+
+  command = [ PluginContribDir + "/icinga2-mattermost/mattermost.py" ]
+
+  arguments = {
+    "--channel" = {
+      "description" = "mattermost channel"
+      "required" = true
+      "value" = "$mattermost_channel$"
+    }
+    "--hostalias" = {
+      "required" = true
+      "value" = "$mattermost_hostalias$"
+    }
+    "--hostoutput" = {
+      "required" = true
+      "value" = "$mattermost_hostoutput$"
+    }
+    "--hoststate" = {
+      "required" = true
+      "value" = "$mattermost_hoststate$"
+    }
+    "--notificationtype" = {
+      "required" = true
+      "value" = "$mattermost_notificationtype$"
+    }
+    "--oneline" = {
+      "set_if" = "$mattermost_oneline$"
+    }
+    "--url" = {
+      "description" = "mattermost incomming webhook url"
+      "required" = true
+      "value" = "$mattermost_url$"
+    }
+  }
+
+  vars += {
+    "mattermost_channel" = [ Channel ]
+    "mattermost_hostalias" = "$host.display_name$"
+    "mattermost_hostoutput" = "$host.output$"
+    "mattermost_hoststate" = "$host.state$"
+    "mattermost_notificationtype" = "$notification.type$"
+    "mattermost_oneline" = [ Oneline ]
+    "mattermost_url" = [ Incoming Webhook URL ]
+  }
+}
+```
+
+3. Create the mattermost User:
+
+```
+object User "mattermost" {
+  import "generic-user"
+  display_name = "Mattermost User"
+  enable_notifications = true
+
+}
+```
+
+4. Apply notifications to mattermost User:
+
+```
+apply Notification "mattermost_service" to Service {
+  assign where true
+  command = "mattermost_service"
+  users = [ "mattermost" ]
+  period = "24x7"
+  types = [ Problem, Acknowledgement, Recovery, Custom, FlappingStart, FlappingEnd, DowntimeStart, DowntimeEnd, DowntimeRemoved ]
+  states = [ OK, Warning, Critical, Unknown ]
+}
+```
+
+```
+apply Notification "mattermost_host" to Host {
+  assign where true
+  command = "mattermost_host"
+  users = [ "mattermost" ]
+  period = "24x7"
+  types = [ Problem, Acknowledgement, Recovery, Custom, FlappingStart, FlappingEnd, DowntimeStart, DowntimeEnd, DowntimeRemoved ]
+  states = [ Up, Down ]
+}
+```
 
 
-        define contact {
-          contact_name                             mattermost
-          alias                                    Mattermost
-          service_notification_period              24x7
-          host_notification_period                 24x7
-          service_notification_options             w,u,c,r
-          host_notification_options                d,r
-          service_notification_commands            notify-service-by-mattermost
-          host_notification_commands               notify-host-by-mattermost
-        }
-
-4. Add the contact to a contact group:
-
-
-        define contactgroup{
-            contactgroup_name   network-admins
-            alias               Network Administrators
-            members             email, mattermost
-        }
