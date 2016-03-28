@@ -1,10 +1,10 @@
-# Nagios Mattermost Plugin
-A plugin for Icinga to enable notifications to Mattermost Open Source Chat.
+# Icinga2 Mattermost Plugin
+A plugin for Icinga2 to enable notifications to Mattermost Open Source Chat.
 
 # Usage
 Assuming you are using Icinga2, the steps are:
 
-1. Copy _mattermost.py_ to any Location. A good Location would be PluginContribDir.
+1. Copy _mattermost.py_ to any Location. A good Location would be _PluginContribDir_.
 2. Create the notification command:
 
 ```
@@ -146,5 +146,4 @@ apply Notification "mattermost_host" to Host {
   states = [ Up, Down ]
 }
 ```
-
 
