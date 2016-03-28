@@ -60,9 +60,7 @@ object NotificationCommand "mattermost_service" {
     "mattermost_url" = [ Incoming Webhook URL ]
   }
 }
-```
 
-```
 object NotificationCommand "mattermost_host" {
   import "plugin-notification-command"
 
