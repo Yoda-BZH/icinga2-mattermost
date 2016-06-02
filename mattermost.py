@@ -21,14 +21,13 @@
 # THE SOFTWARE.
 
 import argparse
-import urllib2
 import json
+import urllib2
 
 VERSION = "0.1.1E"
 
-
-TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
 TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
+TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
 
 def parse():
     parser = argparse.ArgumentParser(description='Sends alerts to Mattermost')
@@ -41,17 +40,14 @@ def parse():
     parser.add_argument('--notificationtype', help='Notification Type',
                         required=True)
     parser.add_argument('--hostalias', help='Host Alias', required=True)
-    parser.add_argument('--notificationtype', help='Notification type',
-                        required=True)
     parser.add_argument('--hoststate', help='Host State')
     parser.add_argument('--hostoutput', help='Host Output')
     parser.add_argument('--servicedesc', help='Service Description')
     parser.add_argument('--servicestate', help='Service State')
     parser.add_argument('--serviceoutput', help='Service Output')
-    parser.add_argument('--channel', help='Channel to notificate')
     parser.add_argument('--oneline', action='store_true', help='Print only one line')
     parser.add_argument('--version', action='version',
-                    version='%(prog)s {version}'.format(version=VERSION))
+                        version='%(prog)s {version}'.format(version=VERSION))
     args = parser.parse_args()
     return args
 
