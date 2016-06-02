@@ -24,7 +24,7 @@ import argparse
 import json
 import urllib2
 
-VERSION = "0.1.1E"
+VERSION = "0.2.0"
 
 TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
 TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
