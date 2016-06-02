@@ -26,18 +26,20 @@ import json
 
 VERSION = "0.1.1E"
 
-CONFIG = {
-    "icon_url": "https://s3.amazonaws.com/cloud.ohloh.net/attachments/50631/icinga_logo_med.png",  #noqa
-    "username": "Icinga"
-}
 
-TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" #noqa
-TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  #noqa
-
+TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
+TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
 
 def parse():
-    parser = argparse.ArgumentParser(description='Sends mattermost webhooks')
-    parser.add_argument('--url', help='Integration URL', required=True)
+    parser = argparse.ArgumentParser(description='Sends alerts to Mattermost')
+    parser.add_argument('--url', help='Incoming Webhook URL', required=True)
+    parser.add_argument('--channel', help='Channel to notify')
+    parser.add_argument('--username', help='Username to notify as',
+                        default='Icinga')
+    parser.add_argument('--iconurl', help='URL of icon to use for username',
+                        default='https://s3.amazonaws.com/cloud.ohloh.net/attachments/50631/icinga_logo_med.png') # noqa
+    parser.add_argument('--notificationtype', help='Notification Type',
+                        required=True)
     parser.add_argument('--hostalias', help='Host Alias', required=True)
     parser.add_argument('--notificationtype', help='Notification type',
                         required=True)
@@ -59,7 +61,7 @@ def encode_special_characters(text):
     return text
 
 
-def make_data(args, config):
+def make_data(args):
     template = TEMPLATE_SERVICE if args.servicestate else TEMPLATE_HOST
     
     # Emojis
@@ -90,8 +92,8 @@ def make_data(args, config):
         text = text.splitlines()[0]
 
     payload = {
-        "username": config["username"],
-        "icon_url": config["icon_url"],
+        "username": args.username,
+        "icon_url": args.iconurl,
         "text": encode_special_characters(text)
     }
 
@@ -109,6 +111,6 @@ def request(url, data):
 
 if __name__ == "__main__":
     args = parse()
-    data = make_data(args, CONFIG)
+    data = make_data(args)
     response = request(args.url, data)
     print response
