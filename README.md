@@ -51,14 +51,14 @@ object NotificationCommand "mattermost_service" {
   }
 
   vars += {
-    "mattermost_channel" = [ Channel ]
+    "mattermost_channel" = "[ channel name without special characters and spaces ]"
     "mattermost_hostalias" = "$host.display_name$"
     "mattermost_notificationtype" = "$notification.type$"
-    "mattermost_oneline" = [ Oneline ]
+    "mattermost_oneline" = [ true | false ] (output of multiple lines is squeezed into one)
     "mattermost_servicedesc" = "$service.display_name$"
     "mattermost_serviceoutput" = "$service.output$"
     "mattermost_servicestate" = "$service.state$"
-    "mattermost_url" = [ Incoming Webhook URL ]
+    "mattermost_url" = "[ Incoming Webhook URL ]"
   }
 }
 
@@ -100,13 +100,13 @@ object NotificationCommand "mattermost_host" {
   }
 
   vars += {
-    "mattermost_channel" = [ Channel ]
+    "mattermost_channel" = "[ channel name without special characters and spaces ]"
     "mattermost_hostalias" = "$host.display_name$"
     "mattermost_hostoutput" = "$host.output$"
     "mattermost_hoststate" = "$host.state$"
     "mattermost_notificationtype" = "$notification.type$"
-    "mattermost_oneline" = [ Oneline ]
-    "mattermost_url" = [ Incoming Webhook URL ]
+    "mattermost_oneline" = [ true | false ] (output of multiple lines is squeezed into one)
+    "mattermost_url" = "[ Incoming Webhook URL ]"
   }
 }
 ```
