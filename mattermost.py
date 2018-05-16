@@ -22,9 +22,10 @@
 
 import argparse
 import json
+import urllib
 import urllib2
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 
 TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
 TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
@@ -50,11 +51,6 @@ def parse():
                         version='%(prog)s {version}'.format(version=VERSION))
     args = parser.parse_args()
     return args
-
-
-def encode_special_characters(text):
-    text = text.replace("%", "%25")
-    return text
 
 
 def make_data(args):
@@ -90,18 +86,19 @@ def make_data(args):
     payload = {
         "username": args.username,
         "icon_url": args.iconurl,
-        "text": encode_special_characters(text)
+        "text": text
     }
 
     if args.channel:
         payload["channel"] = args.channel
 
-    data = "payload=" + json.dumps(payload)
+    data = {'payload' : json.dumps(payload)}
     return data
 
 
 def request(url, data):
-    req = urllib2.Request(url, data)
+    rawdata = urllib.urlencode(data)
+    req = urllib2.Request(url, rawdata)
     response = urllib2.urlopen(req)
     return response.read()
 
