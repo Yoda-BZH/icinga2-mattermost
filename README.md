@@ -106,7 +106,7 @@ object NotificationCommand "mattermost_host" {
     "mattermost_hoststate" = "$host.state$"
     "mattermost_notificationtype" = "$notification.type$"
     "mattermost_oneline" = "$user.vars.oneline$"
-    "mattermost_url" = "$users.vars.url$"
+    "mattermost_url" = "$user.vars.url$"
   }
 }
 ```
