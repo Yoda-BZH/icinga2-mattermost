@@ -5,7 +5,7 @@ A plugin for Icinga2 to enable notifications to Mattermost Open Source Chat.
 Assuming you are using Icinga2, the steps are:
 
 ### 1. Install
-Copy _mattermost.py_ to any Location. A good Location would be _PluginContribDir_.
+Copy _mattermost.py_ to any Location. A good Location would be _PluginContribDir_/icinga2-mattermost/.
 ### 2. Create the notification command:
 
 ```
@@ -51,14 +51,14 @@ object NotificationCommand "mattermost_service" {
   }
 
   vars += {
-    "mattermost_channel" = "[ channel name without special characters and spaces ]"
+    "mattermost_channel" = "$user.vars.channel$"
     "mattermost_hostalias" = "$host.display_name$"
     "mattermost_notificationtype" = "$notification.type$"
-    "mattermost_oneline" = [ true | false ] (output of multiple lines is squeezed into one)
+    "mattermost_oneline" = "$user.vars.oneline$"
     "mattermost_servicedesc" = "$service.display_name$"
     "mattermost_serviceoutput" = "$service.output$"
     "mattermost_servicestate" = "$service.state$"
-    "mattermost_url" = "[ Incoming Webhook URL ]"
+    "mattermost_url" = "$user.vars.url$"
   }
 }
 
@@ -100,13 +100,13 @@ object NotificationCommand "mattermost_host" {
   }
 
   vars += {
-    "mattermost_channel" = "[ channel name without special characters and spaces ]"
+    "mattermost_channel" = "$user.vars.channel$"
     "mattermost_hostalias" = "$host.display_name$"
     "mattermost_hostoutput" = "$host.output$"
     "mattermost_hoststate" = "$host.state$"
     "mattermost_notificationtype" = "$notification.type$"
-    "mattermost_oneline" = [ true | false ] (output of multiple lines is squeezed into one)
-    "mattermost_url" = "[ Incoming Webhook URL ]"
+    "mattermost_oneline" = "$user.vars.oneline$"
+    "mattermost_url" = "$users.vars.url$"
   }
 }
 ```
@@ -117,6 +117,9 @@ object User "mattermost" {
   display_name = "Mattermost User"
   enable_notifications = true
 
+  vars.channel = icinga /* Use here the url channel name, ie. without special characters and spaces */
+  vars.url = https://mattermost.example.com /* Copy incoming Webhook URL defined in mattermost */
+  vars.oneline = false /* Use true if you prefer having all output squashed on one line */
 }
 ```
 ### 4. Apply notifications to mattermost User:
