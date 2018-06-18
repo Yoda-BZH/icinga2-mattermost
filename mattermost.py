@@ -25,7 +25,7 @@ import json
 import urllib
 import urllib2
 
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 
 TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
 TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
@@ -52,33 +52,25 @@ def parse():
     args = parser.parse_args()
     return args
 
+def emoji(notificationtype):
+    return {
+        "RECOVERY": ":white_check_mark:",
+        "PROBLEM": ":fire:",
+        "DOWNTIMESTART": ":clock10:",
+        "DOWNTIMEEND": ":sunny:",
+        "DOWNTIMEREMOVED": "",
+        "CUSTOM": ":sound:",
+        "FLAPPINGSTART": ":cloud:",
+        "FLAPPINGEND": ":sunny:",
+        "ACKNOWLEDGEMENT": ":exclamation:",
+    }.get(notificationtype, "")
 
 def make_data(args):
     template = TEMPLATE_SERVICE if args.servicestate else TEMPLATE_HOST
     
     # Emojis
-    if args.notificationtype == "RECOVERY":
-        EMOJI = ":white_check_mark:"
-    elif args.notificationtype == "PROBLEM":
-        EMOJI = ":fire:"
-    elif args.notificationtype == "DOWNTIMESTART":
-        EMOJI = ":clock10:"
-    elif args.notificationtype == "DOWNTIMEEND":
-        EMOJI = ":sunny:"
-    elif args.notificationtype == "DOWNTIMEREMOVED":
-        EMOJI = ""
-    elif args.notificationtype == "CUSTOM":
-        EMOJI = ":sound:"
-    elif args.notificationtype == "FLAPPINGSTART":
-        EMOJI = ":cloud:"
-    elif args.notificationtype == "FLAPPINGEND":
-        EMOJI = ":sunny:"
-    elif args.notificationtype == "ACKNOWLEDGEMENT":
-        EMOJI = ":exclamation:"
-    else:
-        EMOJI = ""
     
-    text = EMOJI + template.format(**vars(args))
+    text = emoji(args.notificationtype) + template.format(**vars(args))
 
     if args.oneline:
         text = text.splitlines()[0]
