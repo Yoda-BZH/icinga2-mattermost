@@ -1,12 +1,12 @@
 # Icinga2 Mattermost Plugin
 A plugin for Icinga2 to enable notifications to Mattermost Open Source Chat.
 
-# Usage
+## Usage
 Assuming you are using Icinga2, the steps are:
 
 ### 1. Install
 Copy _mattermost.py_ to any Location. A good Location would be _PluginContribDir_/icinga2-mattermost/.
-### 2. Create the notification command:
+### 2. Create the notification command
 
 ```
 object NotificationCommand "mattermost_service" {
@@ -110,7 +110,7 @@ object NotificationCommand "mattermost_host" {
   }
 }
 ```
-### 3. Create the mattermost User:
+### 3. Create the mattermost User
 ```
 object User "mattermost" {
   import "generic-user"
@@ -122,7 +122,7 @@ object User "mattermost" {
   vars.oneline = false /* Use true if you prefer having all output squashed on one line */
 }
 ```
-### 4. Apply notifications to mattermost User:
+### 4. Apply notifications to mattermost User
 ```
 apply Notification "mattermost_service" to Service {
   assign where true
@@ -145,7 +145,7 @@ apply Notification "mattermost_host" to Host {
 }
 ```
 
-# Testing
+## Testing
 
 In order to test the webhook you can use the following command.
 
