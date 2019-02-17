@@ -67,9 +67,9 @@ def emoji(notificationtype):
 
 def make_data(args):
     template = TEMPLATE_SERVICE if args.servicestate else TEMPLATE_HOST
-    
+
     # Emojis
-    
+
     text = emoji(args.notificationtype) + template.format(**vars(args))
 
     if args.oneline:
