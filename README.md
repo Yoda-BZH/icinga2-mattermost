@@ -145,3 +145,10 @@ apply Notification "mattermost_host" to Host {
 }
 ```
 
+# Testing
+
+In order to test the webhook you can use the following command.
+
+```bash
+./mattermost.py --url https://my.mattermost-domain.com/hooks/XXXXXXYYYYYYY --notificationtype CUSTOM --hostalias myexample.com
+```
