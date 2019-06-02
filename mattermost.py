@@ -22,10 +22,16 @@
 
 import argparse
 import json
-import urllib
-import urllib2
+try:
+    import urllib.request as urllib_request
+except ImportError:
+    import urllib2 as urllib_request
+try:
+    import urllib.parse as urllib_parse
+except ImportError:
+    import urllib as urllib_parse
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
 TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
@@ -89,13 +95,13 @@ def make_data(args):
 
 
 def request(url, data):
-    rawdata = urllib.urlencode(data)
-    req = urllib2.Request(url, rawdata)
-    response = urllib2.urlopen(req)
+    rawdata = urllib_parse.urlencode(data).encode("utf-8")
+    req = urllib_request.Request(url, rawdata)
+    response = urllib_request.urlopen(req)
     return response.read()
 
 if __name__ == "__main__":
     args = parse()
     data = make_data(args)
     response = request(args.url, data)
-    print(response)
+    print(response.decode('utf-8'))
