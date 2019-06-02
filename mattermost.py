@@ -98,4 +98,4 @@ if __name__ == "__main__":
     args = parse()
     data = make_data(args)
     response = request(args.url, data)
-    print response
+    print(response)
