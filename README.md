@@ -32,6 +32,12 @@ object NotificationCommand "mattermost_service" {
       "required" = true
       "value" = "$mattermost_notificationtype$"
     }
+    "--author" = {
+      "value" = "$mattermost_author$"
+    }
+    "--comment" = {
+      "value" = "$mattermost_comment$"
+    }
     "--oneline" = {
       "set_if" = "$mattermost_oneline$"
     }
@@ -58,6 +64,8 @@ object NotificationCommand "mattermost_service" {
     "mattermost_channel" = "$user.vars.channel$"
     "mattermost_hostalias" = "$host.display_name$"
     "mattermost_notificationtype" = "$notification.type$"
+    "mattermost_author" = "$notification.author$"
+    "mattermost_comment" = "$notification.comment$"
     "mattermost_oneline" = "$user.vars.oneline$"
     "mattermost_servicedesc" = "$service.display_name$"
     "mattermost_serviceoutput" = "$service.output$"
@@ -93,6 +101,12 @@ object NotificationCommand "mattermost_host" {
       "required" = true
       "value" = "$mattermost_notificationtype$"
     }
+    "--author" = {
+      "value" = "$mattermost_author$"
+    }
+    "--comment" = {
+      "value" = "$mattermost_comment$"
+    }
     "--oneline" = {
       "set_if" = "$mattermost_oneline$"
     }
@@ -109,6 +123,8 @@ object NotificationCommand "mattermost_host" {
     "mattermost_hostoutput" = "$host.output$"
     "mattermost_hoststate" = "$host.state$"
     "mattermost_notificationtype" = "$notification.type$"
+    "mattermost_author" = "$notification.author$"
+    "mattermost_comment" = "$notification.comment$"
     "mattermost_oneline" = "$user.vars.oneline$"
     "mattermost_url" = "$user.vars.url$"
   }

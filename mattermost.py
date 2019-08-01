@@ -52,6 +52,8 @@ def parse():
     parser.add_argument('--servicedesc', help='Service Description')
     parser.add_argument('--servicestate', help='Service State')
     parser.add_argument('--serviceoutput', help='Service Output')
+    parser.add_argument('--author', help='Author')
+    parser.add_argument('--comment', help='Comment')
     parser.add_argument('--oneline', action='store_true', help='Print only one line')
     parser.add_argument('--version', action='version',
                         version='%(prog)s {version}'.format(version=VERSION))
@@ -80,6 +82,10 @@ def make_data(args):
 
     if args.oneline:
         text = text.splitlines()[0]
+    if args.author:
+        text += " authored by " + args.author
+    if args.comment:
+        text += " commented with " + args.comment
 
     payload = {
         "username": args.username,
