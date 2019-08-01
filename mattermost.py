@@ -31,7 +31,7 @@ try:
 except ImportError:
     import urllib as urllib_parse
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
 TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
