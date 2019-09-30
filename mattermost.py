@@ -78,7 +78,7 @@ def make_data(args):
 
     # Emojis
 
-    text = emoji(args.notificationtype) + template.format(**vars(args))
+    text = emoji(args.notificationtype) + " " + template.format(**vars(args))
 
     if args.oneline:
         text = text.splitlines()[0]
