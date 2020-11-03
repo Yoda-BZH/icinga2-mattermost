@@ -1,7 +1,7 @@
 # Icinga2 Mattermost Plugin
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2c896aaa0476426f86e7802198fba6d7)](https://app.codacy.com/app/philipp.dallig/icinga2-mattermost?utm_source=github.com&utm_medium=referral&utm_content=Reamer/icinga2-mattermost&utm_campaign=Badge_Grade_Dashboard)
-[![Build Status](https://travis-ci.org/Reamer/icinga2-mattermost.svg?branch=master)](https://travis-ci.org/Reamer/icinga2-mattermost)
+[![Build Status](https://travis-ci.com/Reamer/icinga2-mattermost.svg?branch=master)](https://travis-ci.com/Reamer/icinga2-mattermost)
 
 A plugin for Icinga2 to enable notifications to Mattermost Open Source Chat.
 
