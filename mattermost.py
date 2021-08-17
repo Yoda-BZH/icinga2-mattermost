@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # Copyright (c) 2015 NDrive SA
 #
@@ -31,14 +31,21 @@ try:
 except ImportError:
     import urllib as urllib_parse
 
-VERSION = "1.2.0"
+# ~ from jinja2 import Environment, FileSystemLoader, select_autoescape
+# ~ env = Environment(
+    # ~ loader=FileSystemLoader('./'),
+    # ~ autoescape=select_autoescape()
+# ~ )
 
-TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
-TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
+VERSION = "1.3.0"
+
+TEMPLATE_HOST_FALLACK = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
+TEMPLATE_SERVICE_FALLBACK = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
 
 def parse():
     parser = argparse.ArgumentParser(description='Sends alerts to Mattermost')
     parser.add_argument('--url', help='Incoming Webhook URL', required=True)
+    parser.add_argument('--domain', help="Link to the web interface")
     parser.add_argument('--channel', help='Channel to notify')
     parser.add_argument('--username', help='Username to notify as',
                         default='Icinga')
@@ -47,11 +54,13 @@ def parse():
     parser.add_argument('--notificationtype', help='Notification Type',
                         required=True)
     parser.add_argument('--hostalias', help='Host Alias', required=True)
+    parser.add_argument('--hostobject', help='Host object', required=False)
     parser.add_argument('--hoststate', help='Host State')
     parser.add_argument('--hostoutput', help='Host Output')
     parser.add_argument('--servicedesc', help='Service Description')
     parser.add_argument('--servicestate', help='Service State')
     parser.add_argument('--serviceoutput', help='Service Output')
+    parser.add_argument('--serviceicon', help="an icon for the service")
     parser.add_argument('--author', help='Author')
     parser.add_argument('--comment', help='Comment')
     parser.add_argument('--oneline', action='store_true', help='Print only one line')
@@ -63,34 +72,85 @@ def parse():
 def emoji(notificationtype):
     return {
         "RECOVERY": ":white_check_mark:",
-        "PROBLEM": ":fire:",
-        "DOWNTIMESTART": ":clock10:",
-        "DOWNTIMEEND": ":sunny:",
-        "DOWNTIMEREMOVED": "",
-        "CUSTOM": ":sound:",
+        #"PROBLEM": ":fire:",
+        "PROBLEM": ":stop_sign:",
+        "DOWNTIMESTART": ":pause_button:",
+        "DOWNTIMEEND": ":arrow_forward:",
+        "DOWNTIMEREMOVED": ":record_button:",
+        "CUSTOM": ":loop:",
         "FLAPPINGSTART": ":cloud:",
         "FLAPPINGEND": ":sunny:",
         "ACKNOWLEDGEMENT": ":exclamation:",
     }.get(notificationtype, "")
 
+def message_color(notificationtype):
+    return {
+        "RECOVERY": "#1FD743",
+        "PROBLEM": "#D7311F",
+        "DOWNTIMESTART": "#000000",
+        "DOWNTIMEEND": "#FFFFFF",
+        "DOWNTIMEREMOVED": "#FFFFFF",
+        "CUSTOM": "#E47529",
+        "FLAPPINGSTART": "#E47529",
+        "FLAPPINGEND": "#E429A1",
+        "ACKNOWLEDGEMENT": "#2976E4",
+    }.get(notificationtype, "")
+
 def make_data(args):
-    template = TEMPLATE_SERVICE if args.servicestate else TEMPLATE_HOST
+    template_fallback = TEMPLATE_SERVICE_FALLBACK if args.servicestate else TEMPLATE_HOST_FALLACK
 
-    # Emojis
-
-    text = emoji(args.notificationtype) + " " + template.format(**vars(args))
+    template_vars = vars(args)
+    template_vars['icon'] = emoji(args.notificationtype)
 
     if args.oneline:
-        text = text.splitlines()[0]
+        text_fallback = text_fallback.splitlines()[0]
+
+    #jinja_name = "service.jinja" if args.servicestate else 'host.jinja'
+
+    #text_markdown = env.get_template(jinja_name).render(**template_vars)
+    text_fallback = template_fallback.format(**template_vars)
+
     if args.author:
-        text += " authored by " + args.author
+        text_fallback += " authored by " + args.author
     if args.comment:
-        text += " commented with " + args.comment
+        text_fallback += " commented with " + args.comment
 
     payload = {
         "username": args.username,
         "icon_url": args.iconurl,
-        "text": text
+        "attachments": [
+            {
+                'fallback': text_fallback,
+                "color": message_color(args.notificationtype),
+                "title:": "foobar",
+                #"text": text_markdown,
+                "mrkdwn_in": ['text', 'fallback'],
+                'author_name': args.author,
+                'author_icon': args.author,
+                "fields": [
+                  {
+                    "short": False,
+                    "title": args.notificationtype,
+                    "value": "{servicedesc} on {hostalias}".format(**template_vars),
+                  },
+                  {
+                    "short": True,
+                    "title": "Host",
+                    "value": '[{hostobject}]({domain}/monitoring/host/show?host={hostobject})'.format(**template_vars),
+                  },
+                  {
+                    "short": True,
+                    "title": "Service",
+                    "value": '[{servicedesc}]({domain}/monitoring/service/show?host={hostobject}&service={servicedesc})'.format(**template_vars),
+                  },
+                  {
+                    "short": False,
+                    "title": "Output",
+                    "value": '__[{serviceoutput}]({domain}/monitoring/service/show?host={hostobject}&service={servicedesc})__'.format(**template_vars)
+                  },
+                ],
+            },
+        ]
     }
 
     if args.channel:
