@@ -31,12 +31,6 @@ try:
 except ImportError:
     import urllib as urllib_parse
 
-# ~ from jinja2 import Environment, FileSystemLoader, select_autoescape
-# ~ env = Environment(
-    # ~ loader=FileSystemLoader('./'),
-    # ~ autoescape=select_autoescape()
-# ~ )
-
 VERSION = "1.3.0"
 
 TEMPLATE_HOST_FALLACK = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
@@ -105,9 +99,6 @@ def make_data(args):
     if args.oneline:
         text_fallback = text_fallback.splitlines()[0]
 
-    #jinja_name = "service.jinja" if args.servicestate else 'host.jinja'
-
-    #text_markdown = env.get_template(jinja_name).render(**template_vars)
     text_fallback = template_fallback.format(**template_vars)
 
     if args.author:
@@ -158,6 +149,7 @@ def make_data(args):
         payload["channel"] = args.channel
 
     data = {'payload' : json.dumps(payload)}
+
     return data
 
 
