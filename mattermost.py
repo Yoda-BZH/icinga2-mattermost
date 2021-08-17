@@ -33,8 +33,9 @@ except ImportError:
 
 VERSION = "1.3.0"
 
-TEMPLATE_HOST_FALLACK = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
-TEMPLATE_SERVICE_FALLBACK = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
+TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
+TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
+
 
 def parse():
     parser = argparse.ArgumentParser(description='Sends alerts to Mattermost')
@@ -57,16 +58,19 @@ def parse():
     parser.add_argument('--serviceicon', help="an icon for the service")
     parser.add_argument('--author', help='Author')
     parser.add_argument('--comment', help='Comment')
-    parser.add_argument('--oneline', action='store_true', help='Print only one line')
+    parser.add_argument('--oneline', action='store_true',
+                        help='Print only one line')
     parser.add_argument('--version', action='version',
                         version='%(prog)s {version}'.format(version=VERSION))
     args = parser.parse_args()
+
     return args
+
 
 def emoji(notificationtype):
     return {
         "RECOVERY": ":white_check_mark:",
-        #"PROBLEM": ":fire:",
+        # "PROBLEM": ":fire:",
         "PROBLEM": ":stop_sign:",
         "DOWNTIMESTART": ":pause_button:",
         "DOWNTIMEEND": ":arrow_forward:",
@@ -76,6 +80,7 @@ def emoji(notificationtype):
         "FLAPPINGEND": ":sunny:",
         "ACKNOWLEDGEMENT": ":exclamation:",
     }.get(notificationtype, "")
+
 
 def message_color(notificationtype):
     return {
@@ -90,21 +95,28 @@ def message_color(notificationtype):
         "ACKNOWLEDGEMENT": "#2976E4",
     }.get(notificationtype, "")
 
+
 def make_data(args):
-    template_fallback = TEMPLATE_SERVICE_FALLBACK if args.servicestate else TEMPLATE_HOST_FALLACK
+    text_template = TEMPLATE_SERVICE if args.servicestate else TEMPLATE_HOST
 
     template_vars = vars(args)
     template_vars['icon'] = emoji(args.notificationtype)
 
+    text_fallback = text_template.format(**template_vars)
+
     if args.oneline:
         text_fallback = text_fallback.splitlines()[0]
-
-    text_fallback = template_fallback.format(**template_vars)
 
     if args.author:
         text_fallback += " authored by " + args.author
     if args.comment:
         text_fallback += " commented with " + args.comment
+
+    field_title = '{servicedesc} on {hostalias}'
+    field_host = '[{hostobject}]({domain}/monitoring/host/show?' + \
+                 'host={hostobject})'
+    field_service = '[{servicedesc}]({domain}/monitoring/service/show?' + \
+                    'host={hostobject}&service={servicedesc})'
 
     payload = {
         "username": args.username,
@@ -114,7 +126,7 @@ def make_data(args):
                 'fallback': text_fallback,
                 "color": message_color(args.notificationtype),
                 "title:": "foobar",
-                #"text": text_markdown,
+                # "text": text_markdown,
                 "mrkdwn_in": ['text', 'fallback'],
                 'author_name': args.author,
                 'author_icon': args.author,
@@ -122,33 +134,36 @@ def make_data(args):
                   {
                     "short": False,
                     "title": args.notificationtype,
-                    "value": "{servicedesc} on {hostalias}".format(**template_vars),
+                    "value": field_title.format(**template_vars),
                   },
                   {
                     "short": True,
                     "title": "Host",
-                    "value": '[{hostobject}]({domain}/monitoring/host/show?host={hostobject})'.format(**template_vars),
+                    "value": field_host.format(**template_vars),
                   },
                   {
                     "short": True,
                     "title": "Service",
-                    "value": '[{servicedesc}]({domain}/monitoring/service/show?host={hostobject}&service={servicedesc})'.format(**template_vars),
+                    "value": field_service.format(**template_vars),
                   },
                 ],
             },
         ]
     }
+
+    field_output = '__[{serviceoutput}]({domain}/monitoring/service/show?' + \
+                   'host={hostobject}&service={servicedesc})__'
     if args.notificationtype != "RECOVERY":
         payload["attachments"][0]['fields'] += [{
           "short": False,
           "title": "Output",
-          "value": '__[{serviceoutput}]({domain}/monitoring/service/show?host={hostobject}&service={servicedesc})__'.format(**template_vars)
+          "value": field_output.format(**template_vars)
         }]
 
     if args.channel:
         payload["channel"] = args.channel
 
-    data = {'payload' : json.dumps(payload)}
+    data = {'payload': json.dumps(payload)}
 
     return data
 
@@ -158,6 +173,7 @@ def request(url, data):
     req = urllib_request.Request(url, rawdata)
     response = urllib_request.urlopen(req)
     return response.read()
+
 
 if __name__ == "__main__":
     args = parse()
