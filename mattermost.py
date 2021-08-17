@@ -143,15 +143,16 @@ def make_data(args):
                     "title": "Service",
                     "value": '[{servicedesc}]({domain}/monitoring/service/show?host={hostobject}&service={servicedesc})'.format(**template_vars),
                   },
-                  {
-                    "short": False,
-                    "title": "Output",
-                    "value": '__[{serviceoutput}]({domain}/monitoring/service/show?host={hostobject}&service={servicedesc})__'.format(**template_vars)
-                  },
                 ],
             },
         ]
     }
+    if args.notificationtype != "RECOVERY":
+        payload["attachments"][0]['fields'] += [{
+          "short": False,
+          "title": "Output",
+          "value": '__[{serviceoutput}]({domain}/monitoring/service/show?host={hostobject}&service={servicedesc})__'.format(**template_vars)
+        }]
 
     if args.channel:
         payload["channel"] = args.channel
