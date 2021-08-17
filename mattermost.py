@@ -22,6 +22,7 @@
 
 import argparse
 import json
+import sys
 try:
     import urllib.request as urllib_request
 except ImportError:
@@ -33,8 +34,13 @@ except ImportError:
 
 VERSION = "1.3.0"
 
-TEMPLATE_HOST = "__{notificationtype}__ {hostalias} is {hoststate} - {hostoutput}"  # noqa
-TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} is {servicestate} - {serviceoutput}" # noqa
+TEMPLATE_HOST = "__{notificationtype}__ {hostalias} " + \
+                "is {hoststate} - {hostoutput}"
+TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} " + \
+                   "is {servicestate} - {serviceoutput}"
+
+iconurl = 'https://s3.amazonaws.com/' + \
+          'cloud.ohloh.net/attachments/50631/icinga_logo_med.png'
 
 
 def parse():
@@ -45,7 +51,7 @@ def parse():
     parser.add_argument('--username', help='Username to notify as',
                         default='Icinga')
     parser.add_argument('--iconurl', help='URL of icon to use for username',
-                        default='https://s3.amazonaws.com/cloud.ohloh.net/attachments/50631/icinga_logo_med.png') # noqa
+                        default=iconurl)
     parser.add_argument('--notificationtype', help='Notification Type',
                         required=True)
     parser.add_argument('--hostalias', help='Host Alias', required=True)
@@ -99,9 +105,14 @@ def message_color(notificationtype):
 def make_data(args):
     text_template = TEMPLATE_SERVICE if args.servicestate else TEMPLATE_HOST
 
+    # extract all variables from argparse
     template_vars = vars(args)
+
+    # add the icon variable if needed in the template
     template_vars['icon'] = emoji(args.notificationtype)
 
+    # prepare the text fallback, if the full message cannot be display
+    # mainly for notification popups
     text_fallback = text_template.format(**template_vars)
 
     if args.oneline:
@@ -151,13 +162,14 @@ def make_data(args):
         ]
     }
 
+    # no need for the service message for recoveries
     field_output = '__[{serviceoutput}]({domain}/monitoring/service/show?' + \
                    'host={hostobject}&service={servicedesc})__'
-    if args.notificationtype != "RECOVERY":
+    if args.servicestate and args.notificationtype != "RECOVERY":
         payload["attachments"][0]['fields'] += [{
-          "short": False,
-          "title": "Output",
-          "value": field_output.format(**template_vars)
+            "short": False,
+            "title": "Output",
+            "value": field_output.format(**template_vars)
         }]
 
     if args.channel:
@@ -169,14 +181,26 @@ def make_data(args):
 
 
 def request(url, data):
-    rawdata = urllib_parse.urlencode(data).encode("utf-8")
-    req = urllib_request.Request(url, rawdata)
-    response = urllib_request.urlopen(req)
-    return response.read()
+    try:
+        rawdata = urllib_parse.urlencode(data).encode("utf-8")
+        req = urllib_request.Request(url, rawdata)
+        response = urllib_request.urlopen(req)
+
+        return response.read()
+    except Exception as e:
+        print(e)
+
+        return "error"
 
 
 if __name__ == "__main__":
     args = parse()
     data = make_data(args)
-    response = request(args.url, data)
-    print(response.decode('utf-8'))
+    response = request(args.url, data).decode('utf-8')
+
+    print(response)
+
+    if response == "ok":
+        sys.exit(0)
+
+    sys.exit(1)
