@@ -58,6 +58,9 @@ object NotificationCommand "mattermost_service" {
       "required" = true
       "value" = "$mattermost_url$"
     }
+    "--serviceicon" = {
+        "value" = "$mattermost_serviceicon"
+    }
   }
 
   vars += {
@@ -71,6 +74,7 @@ object NotificationCommand "mattermost_service" {
     "mattermost_serviceoutput" = "$service.output$"
     "mattermost_servicestate" = "$service.state$"
     "mattermost_url" = "$user.vars.url$"
+    "mattermost_serviceicon" = "$service.icon$"
   }
 }
 
