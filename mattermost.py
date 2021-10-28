@@ -100,6 +100,11 @@ def message_color(notificationtype):
 
 
 def make_data(args):
+
+    if args.servicestate and "Remote Icinga instance '{}' is not connected to".format(args.hostobject) in args.serviceoutput:
+        print("Skipping {}: {}".format(args.hostobject, args.serviceoutput))
+        sys.exit(0)
+
     text_template = TEMPLATE_SERVICE if args.servicestate else TEMPLATE_HOST
 
     # extract all variables from argparse
@@ -157,6 +162,9 @@ def make_data(args):
             },
         ]
     }
+
+    if 'serviceoutput' in template_vars and template_vars['serviceoutput'] and len(template_vars['serviceoutput']) > 180:
+        template_vars['serviceoutput'] = template_vars['serviceoutput'][:180] + "..."
 
     if args.servicestate:
         payload["attachments"][0]['fields'] += [{
