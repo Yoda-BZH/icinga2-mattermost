@@ -34,8 +34,7 @@ TEMPLATE_HOST = "__{notificationtype}__ {hostalias} " + \
 TEMPLATE_SERVICE = "__{notificationtype}__ {hostalias}/{servicedesc} " + \
                    "is {servicestate} - {serviceoutput}"
 
-ICONURL = 'https://s3.amazonaws.com/' + \
-          'cloud.ohloh.net/attachments/50631/icinga_logo_med.png'
+ICONURL = 'https://supervision.groupeot.com/icons/manual/icinga_logo_med.png'
 
 root_log = None
 
@@ -163,8 +162,8 @@ def make_data(args):
         ]
     }
 
-    if 'serviceoutput' in template_vars and template_vars['serviceoutput'] and len(template_vars['serviceoutput']) > 180:
-        template_vars['serviceoutput'] = template_vars['serviceoutput'][:180] + "..."
+    if 'serviceoutput' in template_vars and template_vars['serviceoutput'] and len(template_vars['serviceoutput']) > 150:
+        template_vars['serviceoutput'] = template_vars['serviceoutput'][:150] + "..."
 
     if args.servicestate:
         payload["attachments"][0]['fields'] += [{
