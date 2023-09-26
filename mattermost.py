@@ -62,6 +62,7 @@ def parse():
     parser.add_argument('--comment', help='Comment', default="")
     parser.add_argument('--oneline', action='store_true',
                         help='Print only one line')
+    parser.add_argument('--backend', help="default monitoring backend, may be 'monitoring' or 'icingadb'", default="monitoring")
     parser.add_argument('--version', action='version',
                         version='%(prog)s {version}'.format(version=VERSION))
     args = parser.parse_args()
@@ -129,10 +130,18 @@ def make_data(args):
     else:
         field_title = '{hostalias} is {hoststate}'
 
-    field_host = '[{hostobject}]({domain}/monitoring/host/show?' + \
-                 'host={hostobject})'
-    field_service = '[{servicedesc}]({domain}/monitoring/service/show?' + \
-                    'host={hostobject}&service={servicedesc})'
+    if args.backend == "monitoring":
+        field_host = '[{hostobject}]({domain}/monitoring/host/show?' + \
+                     'host={hostobject})'
+        field_service = '[{servicedesc}]({domain}/monitoring/service/show?' + \
+                        'host={hostobject}&service={servicedesc})'
+    elif args.backend == "icingadb":
+        field_host = '[{hostobject}]({domain}/icingadb/host?' + \
+                     'name={hostobject})'
+        field_service = '[{servicedesc}]({domain}/icingadb/service?' + \
+                        'host.name={hostobject}&name={servicedesc})'
+    else:
+        raise Exception('Backend {} not recognized'.format(args.backend))
 
     payload = {
         "username": args.username,
@@ -173,8 +182,15 @@ def make_data(args):
         }]
 
     # no need for the service message for recoveries
-    field_output = '__[{serviceoutput}]({domain}/monitoring/service/show?' + \
-                   'host={hostobject}&service={servicedesc})__'
+    if args.backend == "monitoring":
+        field_output = '__[{serviceoutput}]({domain}/monitoring/service/show?' + \
+                       'host={hostobject}&service={servicedesc})__'
+    elif args.backend == "icingadb":
+        field_output = '__[{serviceoutput}]({domain}/icingadb/service?' + \
+                       'host.name={hostobject}&name={servicedesc})__'
+    else:
+        raise Exception('Backend {} not recognized'.format(args.backend))
+
     if args.servicestate and args.notificationtype != "RECOVERY":
         payload["attachments"][0]['fields'] += [{
             "short": False,
